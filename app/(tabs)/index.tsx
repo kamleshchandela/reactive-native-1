@@ -1,98 +1,433 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from '../../hooks/use-color-scheme';
+import { Colors, Spacing, Radii, Shadows } from '../../constants/theme';
+import { STUDENT_DETAILS } from '../../constants/config';
+import { useSurveys, Survey } from '../../context/SurveyContext';
+import { CustomHeader } from '../../components/CustomHeader';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function DashboardScreen() {
+  const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+  const { surveys } = useSurveys();
 
-export default function HomeScreen() {
+  // Get time-based greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning ☀️';
+    if (hour < 17) return 'Good Afternoon 🌤️';
+    return 'Good Evening 🌙';
+  };
+
+  // Calculate today's survey count
+  const todayString = new Date().toDateString();
+  const todaySurveys = surveys.filter(
+    (s) => new Date(s.date).toDateString() === todayString
+  );
+  const todayCount = todaySurveys.length;
+
+  const recentSurveys = surveys.slice(0, 5);
+
+  const quickActions = [
+    {
+      title: 'New Survey',
+      icon: 'create-sharp',
+      color: themeColors.primary,
+      route: '/(tabs)/new-survey',
+    },
+    {
+      title: 'Camera',
+      icon: 'camera-sharp',
+      color: themeColors.secondary,
+      route: '/camera',
+    },
+    {
+      title: 'Location',
+      icon: 'location-sharp',
+      color: themeColors.success,
+      route: '/location',
+    },
+    {
+      title: 'Contacts',
+      icon: 'people-sharp',
+      color: themeColors.accent,
+      route: '/contacts',
+    },
+  ];
+
+  const renderSurveyItem = ({ item }: { item: Survey }) => {
+    const formattedDate = new Date(item.date).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const getPriorityColor = (priority: string) => {
+      switch (priority) {
+        case 'High':
+          return themeColors.error;
+        case 'Medium':
+          return themeColors.warning;
+        default:
+          return themeColors.success;
+      }
+    };
+
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.recentItem,
+          {
+            backgroundColor: themeColors.surface,
+            borderColor: themeColors.border,
+          },
+          pressed && styles.pressed,
+        ]}
+        onPress={() => router.push({ pathname: '/preview', params: { id: item.id } })}
+      >
+        <View style={styles.recentItemHeader}>
+          <Text style={[styles.recentItemTitle, { color: themeColors.text }]} numberOfLines={1}>
+            {item.siteName}
+          </Text>
+          <View
+            style={[
+              styles.priorityBadge,
+              { backgroundColor: getPriorityColor(item.priority) + '15' },
+            ]}
+          >
+            <Text style={[styles.priorityBadgeText, { color: getPriorityColor(item.priority) }]}>
+              {item.priority}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={[styles.recentItemSubtitle, { color: themeColors.textSecondary }]} numberOfLines={1}>
+          Client: {item.clientName}
+        </Text>
+
+        <View style={styles.recentItemFooter}>
+          <Ionicons name="calendar-outline" size={14} color={themeColors.textSecondary} style={{ marginRight: 4 }} />
+          <Text style={[styles.recentItemDate, { color: themeColors.textSecondary }]}>
+            {formattedDate}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <CustomHeader title="Dashboard" />
+      
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Welcome Section */}
+        <View style={[styles.welcomeBanner, { backgroundColor: themeColors.primary }]}>
+          <Text style={styles.greetingText}>{getGreeting()}</Text>
+          <Text style={styles.welcomeTitle}>Smart Field Inspector</Text>
+          <Text style={styles.welcomeSubtitle}>Simplify your site survey workflow</Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* Student Profile Card */}
+        <View style={[styles.card, { backgroundColor: themeColors.surface }, Shadows.light]}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="school-outline" size={24} color={themeColors.primary} />
+            <Text style={[styles.cardTitle, { color: themeColors.text }]}>Inspector Profile</Text>
+          </View>
+          <View style={styles.profileDetails}>
+            <View style={[styles.avatar, { backgroundColor: themeColors.primary }]}>
+              <Text style={styles.avatarText}>
+                {STUDENT_DETAILS.name.split(' ').map((n) => n[0]).join('')}
+              </Text>
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={[styles.inspectorName, { color: themeColors.text }]}>
+                {STUDENT_DETAILS.name}
+              </Text>
+              <Text style={[styles.inspectorSub, { color: themeColors.textSecondary }]}>
+                {STUDENT_DETAILS.course}
+              </Text>
+              <Text style={[styles.inspectorSub, { color: themeColors.textSecondary }]}>
+                {STUDENT_DETAILS.batch}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Stats Section */}
+        <View style={[styles.statsCard, { backgroundColor: themeColors.surface }, Shadows.light]}>
+          <View style={styles.statLeft}>
+            <Text style={[styles.statValue, { color: themeColors.primary }]}>{todayCount}</Text>
+            <Text style={[styles.statLabel, { color: themeColors.text }]}>{"Today's Surveys"}</Text>
+          </View>
+          <View style={[styles.statDivider, { backgroundColor: themeColors.border }]} />
+          <View style={styles.statRight}>
+            <Text style={[styles.statValue, { color: themeColors.secondary }]}>{surveys.length}</Text>
+            <Text style={[styles.statLabel, { color: themeColors.text }]}>Total Completed</Text>
+          </View>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Quick Actions</Text>
+        </View>
+        <View style={styles.grid}>
+          {quickActions.map((action, index) => (
+            <Pressable
+              key={index}
+              style={({ pressed }) => [
+                styles.gridItem,
+                { backgroundColor: themeColors.surface, borderColor: themeColors.border },
+                pressed && styles.pressed,
+                Shadows.light,
+              ]}
+              onPress={() => router.push(action.route as any)}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: action.color + '15' }]}>
+                <Ionicons name={action.icon as any} size={28} color={action.color} />
+              </View>
+              <Text style={[styles.gridText, { color: themeColors.text }]}>{action.title}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Recent Survey List */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Recent Surveys</Text>
+          {surveys.length > 0 && (
+            <Pressable onPress={() => router.push('/(tabs)/history')}>
+              <Text style={[styles.seeAllText, { color: themeColors.primary }]}>See All</Text>
+            </Pressable>
+          )}
+        </View>
+
+        {surveys.length === 0 ? (
+          <View style={[styles.emptyContainer, { backgroundColor: themeColors.surface }, Shadows.light]}>
+            <Ionicons name="document-text-outline" size={48} color={themeColors.textSecondary} />
+            <Text style={[styles.emptyText, { color: themeColors.text }]}>No surveys completed yet</Text>
+            <Text style={[styles.emptySubText, { color: themeColors.textSecondary }]}>
+              Start a new survey inspection from the quick actions above or the tabs below!
+            </Text>
+          </View>
+        ) : (
+          <View style={{ marginBottom: Spacing.xl }}>
+            {recentSurveys.map((survey) => (
+              <View key={survey.id} style={{ marginBottom: Spacing.sm }}>
+                {renderSurveyItem({ item: survey })}
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    padding: Spacing.lg,
+  },
+  welcomeBanner: {
+    padding: Spacing.xl,
+    borderRadius: Radii.lg,
+    marginBottom: Spacing.lg,
+    overflow: 'hidden',
+  },
+  greetingText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  welcomeTitle: {
+    color: '#FFF',
+    fontSize: 26,
+    fontWeight: '800',
+    marginTop: Spacing.xs,
+  },
+  welcomeSubtitle: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 14,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  card: {
+    padding: Spacing.lg,
+    borderRadius: Radii.lg,
+    marginBottom: Spacing.lg,
+  },
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: Spacing.md,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginLeft: Spacing.sm,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  profileDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: Radii.round,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  avatarText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  inspectorName: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  inspectorSub: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  statsCard: {
+    flexDirection: 'row',
+    padding: Spacing.lg,
+    borderRadius: Radii.lg,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.lg,
+  },
+  statLeft: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statRight: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statDivider: {
+    width: 1,
+    height: '70%',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.lg,
+  },
+  gridItem: {
+    width: '48%',
+    padding: Spacing.md,
+    borderRadius: Radii.lg,
+    borderWidth: 1,
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  iconContainer: {
+    width: 54,
+    height: 54,
+    borderRadius: Radii.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  gridText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  recentItem: {
+    padding: Spacing.md,
+    borderRadius: Radii.md,
+    borderWidth: 1,
+  },
+  recentItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  recentItemTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+  priorityBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radii.sm,
+  },
+  priorityBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  recentItemSubtitle: {
+    fontSize: 13,
+    marginBottom: Spacing.sm,
+  },
+  recentItemFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recentItemDate: {
+    fontSize: 11,
+  },
+  emptyContainer: {
+    padding: Spacing.xl,
+    borderRadius: Radii.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.xl,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  emptySubText: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  pressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
 });

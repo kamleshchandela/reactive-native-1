@@ -1,42 +1,70 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const primaryColor = '#4F46E5'; // Premium Indigo
+const secondaryColor = '#0EA5E9'; // Sky Blue
+const accentColor = '#D946EF'; // Fuchsia
+const successColor = '#10B981'; // Emerald
+const warningColor = '#F59E0B'; // Amber
+const errorColor = '#EF4444'; // Rose Red
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    primary: primaryColor,
+    secondary: secondaryColor,
+    accent: accentColor,
+    success: successColor,
+    warning: warningColor,
+    error: errorColor,
+    neutral: '#64748B',
+    
+    text: '#0F172A', // Slate 900
+    textSecondary: '#64748B', // Slate 500
+    background: '#F8FAFC', // Slate 50
+    surface: '#FFFFFF', // Pure White
+    border: '#E2E8F0', // Slate 200
+    card: '#FFFFFF',
+    tint: primaryColor,
+    icon: '#64748B',
+    tabIconDefault: '#94A3B8', // Slate 400
+    tabIconSelected: primaryColor,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    primary: '#818CF8', // Indigo 400
+    secondary: '#38BDF8', // Sky Blue 400
+    accent: '#F472B6', // Fuchsia 400
+    success: '#34D399', // Emerald 400
+    warning: '#FBBF24', // Amber 400
+    error: '#F87171', // Rose Red 400
+    neutral: '#94A3B8', // Slate 400
+
+    text: '#F8FAFC', // Slate 50
+    textSecondary: '#94A3B8', // Slate 400
+    background: '#0F172A', // Slate 900
+    surface: '#1E293B', // Slate 800
+    border: '#334155', // Slate 700
+    card: '#1E293B',
+    tint: '#818CF8',
+    icon: '#94A3B8',
+    tabIconDefault: '#475569', // Slate 600
+    tabIconSelected: '#818CF8',
   },
+};
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    sans: 'System',
+    serif: 'Georgia',
+    rounded: 'System',
+    mono: 'Courier',
   },
   default: {
     sans: 'normal',
@@ -51,3 +79,37 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const Radii = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  round: 9999,
+};
+
+export const Shadows = {
+  light: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  medium: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  dark: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+};
