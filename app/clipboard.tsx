@@ -1,3 +1,4 @@
+// Module 6: Clipboard — Copy Survey ID, Contact Number, Location, Paste Notes, Clear Clipboard
 import React, { useState } from 'react';
 import {
   StyleSheet,
