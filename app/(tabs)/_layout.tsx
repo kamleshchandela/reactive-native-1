@@ -1,15 +1,17 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/theme';
+import { Colors, Spacing, Radii } from '../../constants/theme';
 import { useColorScheme } from '../../hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
+
+  // Floating tab bar dimensions
+  const barBottomMargin = insets.bottom > 0 ? insets.bottom : Spacing.md;
 
   return (
     <Tabs
@@ -18,22 +20,37 @@ export default function TabLayout() {
         tabBarInactiveTintColor: themeColors.tabIconDefault,
         headerShown: false,
         tabBarStyle: {
+          position: 'absolute',
+          bottom: barBottomMargin,
+          left: Spacing.lg,
+          right: Spacing.lg,
           backgroundColor: themeColors.surface,
-          borderTopColor: themeColors.border,
-          height: Platform.OS === 'ios' ? 88 : 64 + insets.bottom,
-          paddingBottom: Platform.OS === 'ios' ? 28 : (insets.bottom > 0 ? insets.bottom : 10),
-          paddingTop: 8,
-          borderTopWidth: 1,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
+          borderRadius: Radii.xl,
+          height: 66,
+          paddingBottom: 0, // Reset default padding since it's floating
+          paddingTop: 0,
+          borderTopWidth: 0, // Remove default top border
+          borderWidth: 1,
+          borderColor: themeColors.border,
+          elevation: 10,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.08,
+          shadowRadius: 16,
+          // Extra styles to center icons vertically
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden',
+        },
+        tabBarItemStyle: {
+          height: 64,
+          paddingVertical: Spacing.xs,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          marginTop: -2,
+          fontSize: 10,
+          fontWeight: '800',
+          letterSpacing: 0.3,
+          marginBottom: Spacing.xs,
         },
       }}
     >
@@ -43,9 +60,10 @@ export default function TabLayout() {
           title: 'Dashboard',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={24}
+              size={22}
               name={focused ? 'grid' : 'grid-outline'}
               color={color}
+              style={{ marginTop: 2 }}
             />
           ),
         }}
@@ -56,9 +74,10 @@ export default function TabLayout() {
           title: 'New Survey',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={24}
-              name={focused ? 'create' : 'create-outline'}
+              size={22}
+              name={focused ? 'add-circle' : 'add-circle-outline'}
               color={color}
+              style={{ marginTop: 2 }}
             />
           ),
         }}
@@ -69,9 +88,10 @@ export default function TabLayout() {
           title: 'History',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={24}
+              size={22}
               name={focused ? 'time' : 'time-outline'}
               color={color}
+              style={{ marginTop: 2 }}
             />
           ),
         }}
@@ -82,9 +102,10 @@ export default function TabLayout() {
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={24}
+              size={22}
               name={focused ? 'person' : 'person-outline'}
               color={color}
+              style={{ marginTop: 2 }}
             />
           ),
         }}

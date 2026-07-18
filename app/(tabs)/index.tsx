@@ -260,6 +260,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: Spacing.lg,
+    paddingBottom: 110,
   },
   welcomeBanner: {
     padding: Spacing.xl,

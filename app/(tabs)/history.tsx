@@ -285,6 +285,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: Spacing.lg,
     paddingTop: Spacing.sm,
+    paddingBottom: 110,
   },
   card: {
     padding: Spacing.md,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { CustomHeader } from '../../components/CustomHeader';
 import { Colors, Spacing, Radii } from '../../constants/theme';
 import { useColorScheme } from '../../hooks/use-color-scheme';
@@ -12,7 +12,7 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <CustomHeader title="Inspector Profile" />
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.avatar, { backgroundColor: themeColors.primary }]}>
           <Text style={styles.avatarText}>
             {STUDENT_DETAILS.name.split(' ').map((n) => n[0]).join('')}
@@ -33,7 +33,7 @@ export default function ProfileScreen() {
             <Text style={[styles.infoValue, { color: themeColors.text }]}>{STUDENT_DETAILS.batch}</Text>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     alignItems: 'center',
     padding: Spacing.xl,
     paddingTop: Spacing.xxl,
+    paddingBottom: 110,
   },
   avatar: {
     width: 100,
