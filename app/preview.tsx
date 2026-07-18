@@ -1,3 +1,4 @@
+// Module 7: Survey Preview — Detailed Summary, Edit Survey, Submit Survey with History Persistence
 import React from 'react';
 import {
   StyleSheet,
