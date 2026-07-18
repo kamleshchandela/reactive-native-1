@@ -1,3 +1,4 @@
+// Module 2: Create Survey — Site Name, Client Name, Description, Priority, Date, Validation, Draft Persistence
 import React, { useState } from 'react';
 import {
   StyleSheet,
