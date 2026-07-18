@@ -14,7 +14,6 @@ export default function DashboardScreen() {
   const themeColors = Colors[colorScheme];
   const { surveys } = useSurveys();
 
-  // Get time-based greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning ☀️';
@@ -22,39 +21,45 @@ export default function DashboardScreen() {
     return 'Good Evening 🌙';
   };
 
-  // Calculate today's survey count
   const todayString = new Date().toDateString();
   const todaySurveys = surveys.filter(
     (s) => new Date(s.date).toDateString() === todayString
   );
   const todayCount = todaySurveys.length;
-
   const recentSurveys = surveys.slice(0, 5);
 
   const quickActions = [
     {
       title: 'New Survey',
-      icon: 'create-sharp',
+      icon: 'create',
       color: themeColors.primary,
+      bgColor: themeColors.primary + '10',
       route: '/(tabs)/new-survey',
+      description: 'Start survey draft',
     },
     {
-      title: 'Camera',
-      icon: 'camera-sharp',
+      title: 'Camera Capture',
+      icon: 'camera',
       color: themeColors.secondary,
+      bgColor: themeColors.secondary + '10',
       route: '/camera',
+      description: 'Capture site photos',
     },
     {
-      title: 'Location',
-      icon: 'location-sharp',
+      title: 'GPS Location',
+      icon: 'location',
       color: themeColors.success,
+      bgColor: themeColors.success + '10',
       route: '/location',
+      description: 'Pin coordinates',
     },
     {
-      title: 'Contacts',
-      icon: 'people-sharp',
+      title: 'Contacts List',
+      icon: 'people',
       color: themeColors.accent,
+      bgColor: themeColors.accent + '10',
       route: '/contacts',
+      description: 'Associate contact',
     },
   ];
 
@@ -77,6 +82,8 @@ export default function DashboardScreen() {
       }
     };
 
+    const prColor = getPriorityColor(item.priority);
+
     return (
       <Pressable
         style={({ pressed }) => [
@@ -84,37 +91,44 @@ export default function DashboardScreen() {
           {
             backgroundColor: themeColors.surface,
             borderColor: themeColors.border,
+            borderLeftColor: prColor,
           },
           pressed && styles.pressed,
+          Shadows.light,
         ]}
         onPress={() => router.push({ pathname: '/preview', params: { id: item.id } })}
       >
-        <View style={styles.recentItemHeader}>
-          <Text style={[styles.recentItemTitle, { color: themeColors.text }]} numberOfLines={1}>
-            {item.siteName}
-          </Text>
-          <View
-            style={[
-              styles.priorityBadge,
-              { backgroundColor: getPriorityColor(item.priority) + '15' },
-            ]}
-          >
-            <Text style={[styles.priorityBadgeText, { color: getPriorityColor(item.priority) }]}>
-              {item.priority}
+        <View style={styles.recentItemMain}>
+          <View style={styles.recentItemHeader}>
+            <Text style={[styles.recentItemTitle, { color: themeColors.text }]} numberOfLines={1}>
+              {item.siteName}
             </Text>
+            <View style={[styles.priorityBadge, { backgroundColor: prColor + '15' }]}>
+              <Text style={[styles.priorityBadgeText, { color: prColor }]}>
+                {item.priority}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.recentItemSubtitle, { color: themeColors.textSecondary }]} numberOfLines={1}>
+            Client: {item.clientName}
+          </Text>
+
+          <View style={styles.recentItemFooter}>
+            <View style={styles.footerInfoItem}>
+              <Ionicons name="calendar-outline" size={13} color={themeColors.textSecondary} style={{ marginRight: 4 }} />
+              <Text style={[styles.recentItemDate, { color: themeColors.textSecondary }]}>
+                {formattedDate}
+              </Text>
+            </View>
+            <View style={styles.attachmentIcons}>
+              {item.photoUri && <Ionicons name="camera-outline" size={12} color={themeColors.textSecondary} style={styles.miniIcon} />}
+              {item.location && <Ionicons name="location-outline" size={12} color={themeColors.textSecondary} style={styles.miniIcon} />}
+              {item.contact && <Ionicons name="person-outline" size={12} color={themeColors.textSecondary} style={styles.miniIcon} />}
+            </View>
           </View>
         </View>
-
-        <Text style={[styles.recentItemSubtitle, { color: themeColors.textSecondary }]} numberOfLines={1}>
-          Client: {item.clientName}
-        </Text>
-
-        <View style={styles.recentItemFooter}>
-          <Ionicons name="calendar-outline" size={14} color={themeColors.textSecondary} style={{ marginRight: 4 }} />
-          <Text style={[styles.recentItemDate, { color: themeColors.textSecondary }]}>
-            {formattedDate}
-          </Text>
-        </View>
+        <Ionicons name="chevron-forward" size={16} color={themeColors.border} style={styles.chevron} />
       </Pressable>
     );
   };
@@ -124,18 +138,22 @@ export default function DashboardScreen() {
       <CustomHeader title="Dashboard" />
       
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Welcome Section */}
+        {/* Welcome Section with geometric art */}
         <View style={[styles.welcomeBanner, { backgroundColor: themeColors.primary }]}>
+          <View style={styles.bannerCircle1} />
+          <View style={styles.bannerCircle2} />
           <Text style={styles.greetingText}>{getGreeting()}</Text>
           <Text style={styles.welcomeTitle}>Smart Field Inspector</Text>
-          <Text style={styles.welcomeSubtitle}>Simplify your site survey workflow</Text>
+          <Text style={styles.welcomeSubtitle}>Optimize site surveys & logs with offline sync</Text>
         </View>
 
-        {/* Student Profile Card */}
-        <View style={[styles.card, { backgroundColor: themeColors.surface }, Shadows.light]}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="school-outline" size={24} color={themeColors.primary} />
-            <Text style={[styles.cardTitle, { color: themeColors.text }]}>Inspector Profile</Text>
+        {/* Inspector Profile Badge Card */}
+        <View style={[styles.card, { backgroundColor: themeColors.surface, borderLeftColor: themeColors.primary }, Shadows.medium]}>
+          <View style={styles.badgeHeader}>
+            <Text style={[styles.badgeLabel, { color: themeColors.primary }]}>FIELD REPRESENTATIVE</Text>
+            <View style={[styles.statusIndicator, { backgroundColor: themeColors.success }]}>
+              <Text style={styles.statusText}>ACTIVE</Text>
+            </View>
           </View>
           <View style={styles.profileDetails}>
             <View style={[styles.avatar, { backgroundColor: themeColors.primary }]}>
@@ -150,30 +168,39 @@ export default function DashboardScreen() {
               <Text style={[styles.inspectorSub, { color: themeColors.textSecondary }]}>
                 {STUDENT_DETAILS.course}
               </Text>
-              <Text style={[styles.inspectorSub, { color: themeColors.textSecondary }]}>
-                {STUDENT_DETAILS.batch}
-              </Text>
+              <View style={[styles.batchBadge, { backgroundColor: themeColors.background }]}>
+                <Ionicons name="ribbon-outline" size={12} color={themeColors.primary} style={{ marginRight: 4 }} />
+                <Text style={[styles.batchText, { color: themeColors.text }]}>{STUDENT_DETAILS.batch}</Text>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* Stats Section */}
-        <View style={[styles.statsCard, { backgroundColor: themeColors.surface }, Shadows.light]}>
-          <View style={styles.statLeft}>
-            <Text style={[styles.statValue, { color: themeColors.primary }]}>{todayCount}</Text>
-            <Text style={[styles.statLabel, { color: themeColors.text }]}>{"Today's Surveys"}</Text>
+        {/* Stats Section - Side-by-Side Widgets */}
+        <View style={styles.statsRow}>
+          <View style={[styles.statHalfCard, { backgroundColor: themeColors.surface }, Shadows.light]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: themeColors.primary + '15' }]}>
+              <Ionicons name="today" size={20} color={themeColors.primary} />
+            </View>
+            <Text style={[styles.statValue, { color: themeColors.text }]}>{todayCount}</Text>
+            <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>{"Today's Surveys"}</Text>
           </View>
-          <View style={[styles.statDivider, { backgroundColor: themeColors.border }]} />
-          <View style={styles.statRight}>
-            <Text style={[styles.statValue, { color: themeColors.secondary }]}>{surveys.length}</Text>
-            <Text style={[styles.statLabel, { color: themeColors.text }]}>Total Completed</Text>
+
+          <View style={[styles.statHalfCard, { backgroundColor: themeColors.surface }, Shadows.light]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: themeColors.secondary + '15' }]}>
+              <Ionicons name="checkmark-done-circle" size={20} color={themeColors.secondary} />
+            </View>
+            <Text style={[styles.statValue, { color: themeColors.text }]}>{surveys.length}</Text>
+            <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>{"Total Completed"}</Text>
           </View>
         </View>
 
-        {/* Quick Actions */}
+        {/* Quick Actions Title */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Quick Inspection Tools</Text>
         </View>
+
+        {/* Quick Actions Grid */}
         <View style={styles.grid}>
           {quickActions.map((action, index) => (
             <Pressable
@@ -186,30 +213,31 @@ export default function DashboardScreen() {
               ]}
               onPress={() => router.push(action.route as any)}
             >
-              <View style={[styles.iconContainer, { backgroundColor: action.color + '15' }]}>
-                <Ionicons name={action.icon as any} size={28} color={action.color} />
+              <View style={[styles.iconContainer, { backgroundColor: action.bgColor }]}>
+                <Ionicons name={action.icon as any} size={24} color={action.color} />
               </View>
               <Text style={[styles.gridText, { color: themeColors.text }]}>{action.title}</Text>
+              <Text style={[styles.gridSubText, { color: themeColors.textSecondary }]}>{action.description}</Text>
             </Pressable>
           ))}
         </View>
 
-        {/* Recent Survey List */}
+        {/* Recent Survey List Title */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Recent Surveys</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Recent Inspections</Text>
           {surveys.length > 0 && (
             <Pressable onPress={() => router.push('/(tabs)/history')}>
-              <Text style={[styles.seeAllText, { color: themeColors.primary }]}>See All</Text>
+              <Text style={[styles.seeAllText, { color: themeColors.primary }]}>View History</Text>
             </Pressable>
           )}
         </View>
 
         {surveys.length === 0 ? (
           <View style={[styles.emptyContainer, { backgroundColor: themeColors.surface }, Shadows.light]}>
-            <Ionicons name="document-text-outline" size={48} color={themeColors.textSecondary} />
-            <Text style={[styles.emptyText, { color: themeColors.text }]}>No surveys completed yet</Text>
+            <Ionicons name="reader-outline" size={42} color={themeColors.textSecondary} />
+            <Text style={[styles.emptyText, { color: themeColors.text }]}>No site surveys logged</Text>
             <Text style={[styles.emptySubText, { color: themeColors.textSecondary }]}>
-              Start a new survey inspection from the quick actions above or the tabs below!
+              {"Your completed reports will appear here. Press 'New Survey' below to start logging."}
             </Text>
           </View>
         ) : (
@@ -238,23 +266,42 @@ const styles = StyleSheet.create({
     borderRadius: Radii.lg,
     marginBottom: Spacing.lg,
     overflow: 'hidden',
+    position: 'relative',
+  },
+  bannerCircle1: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    position: 'absolute',
+    top: -50,
+    right: -40,
+  },
+  bannerCircle2: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    position: 'absolute',
+    bottom: -30,
+    left: -20,
   },
   greetingText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 12,
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   welcomeTitle: {
     color: '#FFF',
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
     marginTop: Spacing.xs,
   },
   welcomeSubtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 13,
     marginTop: 4,
     fontWeight: '500',
   },
@@ -262,24 +309,36 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderRadius: Radii.lg,
     marginBottom: Spacing.lg,
+    borderLeftWidth: 4,
   },
-  cardHeader: {
+  badgeHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.md,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginLeft: Spacing.sm,
+  badgeLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  statusIndicator: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: Radii.xs,
+  },
+  statusText: {
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '800',
   },
   profileDetails: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 50,
-    height: 50,
+    width: 54,
+    height: 54,
     borderRadius: Radii.round,
     justifyContent: 'center',
     alignItems: 'center',
@@ -287,7 +346,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#FFF',
-    fontWeight: 'bold',
+    fontWeight: '800',
     fontSize: 18,
   },
   profileInfo: {
@@ -301,34 +360,47 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  statsCard: {
+  batchBadge: {
     flexDirection: 'row',
-    padding: Spacing.lg,
-    borderRadius: Radii.lg,
     alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radii.sm,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  batchText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  statsRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: Spacing.lg,
+    gap: Spacing.md,
   },
-  statLeft: {
+  statHalfCard: {
     flex: 1,
-    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: Radii.lg,
+    alignItems: 'flex-start',
   },
-  statRight: {
-    flex: 1,
+  statIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: Radii.sm,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  statDivider: {
-    width: 1,
-    height: '70%',
+    marginBottom: Spacing.sm,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
   },
   statLabel: {
     fontSize: 12,
     fontWeight: '600',
-    marginTop: 4,
+    marginTop: 2,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -338,12 +410,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
   },
   grid: {
     flexDirection: 'row',
@@ -356,12 +429,12 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: Radii.lg,
     borderWidth: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: Spacing.md,
   },
   iconContainer: {
-    width: 54,
-    height: 54,
+    width: 44,
+    height: 44,
     borderRadius: Radii.md,
     justifyContent: 'center',
     alignItems: 'center',
@@ -369,12 +442,22 @@ const styles = StyleSheet.create({
   },
   gridText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  gridSubText: {
+    fontSize: 10,
+    marginTop: 2,
   },
   recentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: Radii.md,
+    borderRadius: Radii.lg,
     borderWidth: 1,
+    borderLeftWidth: 4,
+  },
+  recentItemMain: {
+    flex: 1,
   },
   recentItemHeader: {
     flexDirection: 'row',
@@ -389,24 +472,40 @@ const styles = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   priorityBadge: {
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: Radii.sm,
   },
   priorityBadgeText: {
-    fontSize: 11,
-    fontWeight: 'bold',
+    fontSize: 10,
+    fontWeight: '800',
   },
   recentItemSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     marginBottom: Spacing.sm,
   },
   recentItemFooter: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  footerInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   recentItemDate: {
     fontSize: 11,
+  },
+  attachmentIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  miniIcon: {
+    marginLeft: 2,
+  },
+  chevron: {
+    marginLeft: Spacing.sm,
   },
   emptyContainer: {
     padding: Spacing.xl,
@@ -416,18 +515,18 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     marginTop: Spacing.md,
     marginBottom: Spacing.xs,
   },
   emptySubText: {
-    fontSize: 12,
+    fontSize: 11,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 16,
   },
   pressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
 });
