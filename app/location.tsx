@@ -1,3 +1,4 @@
+// Module 4: Location — Permission, GPS Coords, Accuracy, Refresh, Copy to Clipboard, Attach to Survey Draft
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
