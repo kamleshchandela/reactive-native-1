@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '../hooks/use-color-scheme';
@@ -24,6 +25,7 @@ export default function CameraScreen() {
   const { updateDraft, draft } = useSurveys();
 
   const [permission, requestPermission] = useCameraPermissions();
+  const [libraryPermission, requestLibraryPermission] = MediaLibrary.usePermissions();
   const [facing, setFacing] = useState<CameraType>('back');
   const [capturedUri, setCapturedUri] = useState<string | null>(draft.photoUri);
   const [captureTime, setCaptureTime] = useState<string | null>(draft.photoTimestamp);
@@ -74,7 +76,26 @@ export default function CameraScreen() {
     );
   };
 
-  const handleSaveAndGoBack = () => {
+  const handleSaveAndGoBack = async () => {
+    if (capturedUri) {
+      try {
+        let hasPermission = libraryPermission?.granted;
+        if (!hasPermission) {
+          const req = await requestLibraryPermission();
+          hasPermission = req.granted;
+        }
+
+        if (hasPermission) {
+          await MediaLibrary.createAssetAsync(capturedUri);
+          Alert.alert('📸 Saved to Gallery', 'This photo was successfully saved to your phone\'s photo gallery.');
+        } else {
+          Alert.alert('Media Gallery Access Required', 'Cannot save photo to gallery without permission.');
+        }
+      } catch (err) {
+        console.log('Error saving image:', err);
+        Alert.alert('Save Error', 'Failed to save captured photo to the system gallery.');
+      }
+    }
     updateDraft({ photoUri: capturedUri, photoTimestamp: captureTime });
     router.back();
   };
