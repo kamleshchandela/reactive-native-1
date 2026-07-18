@@ -30,6 +30,7 @@ export default function CameraScreen() {
   const [capturedUri, setCapturedUri] = useState<string | null>(draft.photoUri);
   const [captureTime, setCaptureTime] = useState<string | null>(draft.photoTimestamp);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const cameraRef = useRef<CameraView>(null);
 
@@ -38,15 +39,38 @@ export default function CameraScreen() {
 
   const handleCapture = async () => {
     if (!cameraRef.current) return;
+    setIsSaving(true);
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.85 });
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.85,
+        skipProcessing: false,
+      });
       if (photo) {
         const timestamp = new Date().toLocaleString();
         setCapturedUri(photo.uri);
         setCaptureTime(timestamp);
+
+        // Save to gallery immediately while the URI is fresh
+        try {
+          let hasPermission = libraryPermission?.granted;
+          if (!hasPermission) {
+            const req = await requestLibraryPermission();
+            hasPermission = req.granted;
+          }
+          if (hasPermission) {
+            await MediaLibrary.createAssetAsync(photo.uri);
+            // Show a brief non-blocking toast-style confirmation
+            Alert.alert('📸 Photo Saved', 'Photo saved to your gallery automatically.');
+          }
+        } catch (galleryErr) {
+          // Gallery save failed silently — photo still available in draft
+          console.log('Gallery save error:', galleryErr);
+        }
       }
     } catch {
-      Alert.alert('Error', 'Failed to capture photo. Please try again.');
+      Alert.alert('Capture Error', 'Failed to take photo. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -76,26 +100,9 @@ export default function CameraScreen() {
     );
   };
 
-  const handleSaveAndGoBack = async () => {
-    if (capturedUri) {
-      try {
-        let hasPermission = libraryPermission?.granted;
-        if (!hasPermission) {
-          const req = await requestLibraryPermission();
-          hasPermission = req.granted;
-        }
-
-        if (hasPermission) {
-          await MediaLibrary.createAssetAsync(capturedUri);
-          Alert.alert('📸 Saved to Gallery', 'This photo was successfully saved to your phone\'s photo gallery.');
-        } else {
-          Alert.alert('Media Gallery Access Required', 'Cannot save photo to gallery without permission.');
-        }
-      } catch (err) {
-        console.log('Error saving image:', err);
-        Alert.alert('Save Error', 'Failed to save captured photo to the system gallery.');
-      }
-    }
+  const handleSaveAndGoBack = () => {
+    // Just attach the URI to the draft and go back
+    // Gallery save already happened at capture time
     updateDraft({ photoUri: capturedUri, photoTimestamp: captureTime });
     router.back();
   };
@@ -238,18 +245,22 @@ export default function CameraScreen() {
         {/* Capture Button */}
         <View style={[styles.captureBar, { backgroundColor: themeColors.surface }]}>
           <Text style={[styles.captureHint, { color: themeColors.textSecondary }]}>
-            Tap to capture site photo
+            {isSaving ? 'Saving to gallery…' : 'Tap to capture site photo'}
           </Text>
           <Pressable
             style={({ pressed }) => [
               styles.captureButton,
-              { borderColor: themeColors.primary },
+              { borderColor: isSaving ? themeColors.textSecondary : themeColors.primary },
               pressed && styles.pressed,
             ]}
             onPress={handleCapture}
-            disabled={isLoading}
+            disabled={isLoading || isSaving}
           >
-            <View style={[styles.captureInner, { backgroundColor: themeColors.primary }]} />
+            {isSaving ? (
+              <ActivityIndicator size="small" color={themeColors.primary} />
+            ) : (
+              <View style={[styles.captureInner, { backgroundColor: themeColors.primary }]} />
+            )}
           </Pressable>
         </View>
       </View>

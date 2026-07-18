@@ -40,7 +40,14 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-camera"
+      "expo-camera",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow this app to save inspection photos to your gallery.",
+          "savePhotosPermission": "Allow this app to save inspection photos to your gallery."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
