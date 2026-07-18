@@ -1,3 +1,4 @@
+// Module 3: Camera — Permission, Capture, Preview, Timestamp, Retake, Delete with Confirmation, Loading Indicator
 import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
