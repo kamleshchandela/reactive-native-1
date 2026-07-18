@@ -1,3 +1,4 @@
+// Module 5: Contacts — Permission, Searchable FlatList, Count, Initials Avatar, Copy Number, Attach to Draft, Pull-to-Refresh, Empty State
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
