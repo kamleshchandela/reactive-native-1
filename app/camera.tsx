@@ -5,21 +5,23 @@ import {
   Text,
   View,
   Pressable,
-  Alert,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '../hooks/use-color-scheme';
-import { Colors, Spacing, Radii, Shadows } from '../constants/theme';
+import { Colors, Spacing, Radii } from '../constants/theme';
 import { useSurveys } from '../context/SurveyContext';
 import { CustomHeader } from '../components/CustomHeader';
 
 export default function CameraScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
   const { updateDraft, draft } = useSurveys();
@@ -34,7 +36,6 @@ export default function CameraScreen() {
 
   const cameraRef = useRef<CameraView>(null);
 
-  // Once the camera is mounted, mark loading as done
   const onCameraReady = () => setIsLoading(false);
 
   const handleCapture = async () => {
@@ -59,11 +60,8 @@ export default function CameraScreen() {
           }
           if (hasPermission) {
             await MediaLibrary.createAssetAsync(photo.uri);
-            // Show a brief non-blocking toast-style confirmation
-            Alert.alert('Photo Saved', 'Photo saved to your gallery automatically.');
           }
         } catch (galleryErr) {
-          // Gallery save failed silently — photo still available in draft
           console.log('Gallery save error:', galleryErr);
         }
       }
@@ -80,141 +78,83 @@ export default function CameraScreen() {
     setIsLoading(true);
   };
 
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Photo',
-      'Are you sure you want to delete this photo? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setCapturedUri(null);
-            setCaptureTime(null);
-            // Clear from draft too
-            updateDraft({ photoUri: null, photoTimestamp: null });
-          },
-        },
-      ]
-    );
-  };
-
   const handleSaveAndGoBack = () => {
-    // Just attach the URI to the draft and go back
-    // Gallery save already happened at capture time
     updateDraft({ photoUri: capturedUri, photoTimestamp: captureTime });
     router.back();
   };
 
-  // --- Permission not yet determined ---
+  // --- Permission Check views ---
   if (!permission) {
     return (
-      <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-        <CustomHeader title="Camera" showBackButton />
-        <View style={styles.centeredContent}>
-          <ActivityIndicator size="large" color={themeColors.primary} />
-          <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>
-            Checking permissions...
-          </Text>
-        </View>
+      <View style={[styles.centeredContent, { backgroundColor: themeColors.background }]}>
+        <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
   }
 
-  // --- Permission denied ---
   if (!permission.granted) {
     return (
-      <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-        <CustomHeader title="Camera" showBackButton />
-        <View style={styles.centeredContent}>
-          <View style={[styles.permissionIcon, { backgroundColor: themeColors.error + '15' }]}>
-            <Ionicons name="camera-outline" size={56} color={themeColors.error} />
-          </View>
-          <Text style={[styles.permissionTitle, { color: themeColors.text }]}>
-            Camera Access Required
-          </Text>
-          <Text style={[styles.permissionText, { color: themeColors.textSecondary }]}>
-            This app needs camera access to capture site inspection photos. Please grant permission to continue.
-          </Text>
-          <Pressable
-            style={({ pressed }) => [
-              styles.permissionButton,
-              { backgroundColor: themeColors.primary },
-              pressed && styles.pressed,
-            ]}
-            onPress={requestPermission}
-          >
-            <Ionicons name="camera-outline" size={20} color="#FFF" style={{ marginRight: Spacing.sm }} />
-            <Text style={styles.permissionButtonText}>Grant Camera Permission</Text>
-          </Pressable>
+      <View style={[styles.centeredContent, { backgroundColor: themeColors.background }]}>
+        <View style={[styles.permissionIcon, { backgroundColor: themeColors.primary + '12' }]}>
+          <Ionicons name="camera" size={54} color={themeColors.primary} />
         </View>
+        <Text style={[styles.permissionTitle, { color: themeColors.text }]}>Camera Access Required</Text>
+        <Text style={[styles.permissionText, { color: themeColors.textSecondary }]}>
+          Please allow this application to access your device camera to capture structural survey images.
+        </Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.permissionButton,
+            { backgroundColor: themeColors.primary },
+            pressed && styles.pressed,
+          ]}
+          onPress={requestPermission}
+        >
+          <Text style={styles.permissionButtonText}>Grant Access</Text>
+        </Pressable>
       </View>
     );
   }
 
-  // --- Photo preview mode ---
+  // --- Capturing Preview Screen Mode (iOS-style Clean Layout) ---
   if (capturedUri) {
     return (
       <View style={[styles.container, { backgroundColor: '#000' }]}>
-        <CustomHeader title="Photo Preview" showBackButton />
+        <CustomHeader title="Review Photo" showBackButton />
         <View style={styles.previewContainer}>
           <Image source={{ uri: capturedUri }} style={styles.previewImage} resizeMode="contain" />
-
-          {captureTime && (
-            <View style={styles.timestampBadge}>
-              <Ionicons name="time-outline" size={14} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.timestampText}>Captured: {captureTime}</Text>
-            </View>
-          )}
+          
+          {/* Metadata Overlay info */}
+          <View style={styles.timestampBadge}>
+            <Ionicons name="time" size={14} color="#FFF" style={{ marginRight: 6 }} />
+            <Text style={styles.timestampText}>{captureTime}</Text>
+          </View>
         </View>
 
-        <View style={[styles.previewActions, { backgroundColor: themeColors.surface }]}>
+        {/* Shutter bottom bar review controls (iOS System Style) */}
+        <View style={[styles.reviewBar, { paddingBottom: insets.bottom + 20 }]}>
           <Pressable
-            style={({ pressed }) => [
-              styles.actionButton,
-              { backgroundColor: themeColors.error + '15', borderColor: themeColors.error },
-              pressed && styles.pressed,
-            ]}
-            onPress={handleDelete}
-          >
-            <Ionicons name="trash-outline" size={22} color={themeColors.error} />
-            <Text style={[styles.actionButtonText, { color: themeColors.error }]}>Delete</Text>
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.actionButton,
-              { backgroundColor: themeColors.secondary + '15', borderColor: themeColors.secondary },
-              pressed && styles.pressed,
-            ]}
+            style={({ pressed }) => [styles.reviewTextButton, pressed && styles.pressed]}
             onPress={handleRetake}
           >
-            <Ionicons name="refresh-outline" size={22} color={themeColors.secondary} />
-            <Text style={[styles.actionButtonText, { color: themeColors.secondary }]}>Retake</Text>
+            <Text style={[styles.reviewButtonText, { color: '#FFFFFF' }]}>Retake</Text>
           </Pressable>
 
           <Pressable
-            style={({ pressed }) => [
-              styles.actionButton,
-              styles.actionButtonPrimary,
-              { backgroundColor: themeColors.primary },
-              pressed && styles.pressed,
-            ]}
+            style={({ pressed }) => [styles.reviewTextButton, pressed && styles.pressed]}
             onPress={handleSaveAndGoBack}
           >
-            <Ionicons name="checkmark-circle-outline" size={22} color="#FFF" />
-            <Text style={[styles.actionButtonText, { color: '#FFF' }]}>Use Photo</Text>
+            <Text style={[styles.reviewButtonText, { color: themeColors.primary, fontWeight: '800' }]}>Use Photo</Text>
           </Pressable>
         </View>
       </View>
     );
   }
 
-  // --- Live Camera View ---
+  // --- Live Camera View Viewport ---
   return (
     <View style={[styles.container, { backgroundColor: '#000' }]}>
-      <CustomHeader title="Camera" showBackButton />
+      <CustomHeader title="Camera View" showBackButton />
 
       <View style={styles.cameraContainer}>
         <CameraView
@@ -227,41 +167,66 @@ export default function CameraScreen() {
           {isLoading && (
             <View style={styles.loadingOverlay}>
               <ActivityIndicator size="large" color="#FFF" />
-              <Text style={styles.loadingOverlayText}>Initializing camera...</Text>
             </View>
           )}
 
-          {/* Top controls */}
+          {/* Top Control Bar */}
           <View style={styles.topControls}>
             <Pressable
               style={({ pressed }) => [styles.controlButton, pressed && styles.pressed]}
               onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
             >
-              <Ionicons name="camera-reverse-outline" size={28} color="#FFF" />
+              <Ionicons name="camera-reverse-outline" size={24} color="#FFF" />
             </Pressable>
           </View>
         </CameraView>
 
-        {/* Capture Button */}
-        <View style={[styles.captureBar, { backgroundColor: themeColors.surface }]}>
-          <Text style={[styles.captureHint, { color: themeColors.textSecondary }]}>
-            {isSaving ? 'Saving to gallery…' : 'Tap to capture site photo'}
+        {/* Capture Control dock */}
+        <View style={[styles.captureBar, { paddingBottom: insets.bottom + 24 }]}>
+          <Text style={styles.captureHint}>
+            {isSaving ? 'Saving to gallery…' : 'Capture inspection site image'}
           </Text>
-          <Pressable
-            style={({ pressed }) => [
-              styles.captureButton,
-              { borderColor: isSaving ? themeColors.textSecondary : themeColors.primary },
-              pressed && styles.pressed,
-            ]}
-            onPress={handleCapture}
-            disabled={isLoading || isSaving}
-          >
-            {isSaving ? (
-              <ActivityIndicator size="small" color={themeColors.primary} />
-            ) : (
-              <View style={[styles.captureInner, { backgroundColor: themeColors.primary }]} />
-            )}
-          </Pressable>
+          
+          <View style={styles.captureRow}>
+            {/* Shutter Left: Captured media roll preview */}
+            <Pressable 
+              style={styles.mediaRollWrapper}
+              onPress={() => {
+                if (capturedUri) {
+                  setCapturedUri(capturedUri);
+                } else if (draft.photoUri) {
+                  setCapturedUri(draft.photoUri);
+                }
+              }}
+            >
+              {draft.photoUri ? (
+                <Image source={{ uri: draft.photoUri }} style={styles.mediaRollThumb} />
+              ) : (
+                <View style={styles.mediaRollEmpty}>
+                  <Ionicons name="image" size={18} color="rgba(255, 255, 255, 0.4)" />
+                </View>
+              )}
+            </Pressable>
+
+            {/* Shutter Center: Main Camera shutter button */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.captureButton,
+                pressed && styles.pressed,
+              ]}
+              onPress={handleCapture}
+              disabled={isLoading || isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <View style={styles.captureInner} />
+              )}
+            </Pressable>
+
+            {/* Shutter Right: Empty placeholder to align layout */}
+            <View style={{ width: 48, height: 48 }} />
+          </View>
         </View>
       </View>
     </View>
@@ -276,20 +241,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.xl,
   },
-  loadingText: {
-    marginTop: Spacing.md,
-    fontSize: 14,
-  },
   permissionIcon: {
-    width: 110,
-    height: 110,
-    borderRadius: Radii.round,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
   permissionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
     textAlign: 'center',
     marginBottom: Spacing.md,
@@ -306,7 +267,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
     borderRadius: Radii.lg,
-    ...Shadows.medium,
   },
   permissionButtonText: {
     color: '#FFF',
@@ -315,18 +275,14 @@ const styles = StyleSheet.create({
   },
 
   cameraContainer: { flex: 1 },
-  camera: { flex: 1 },
+  camera: { flex: 1, position: 'relative' },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingOverlayText: {
-    color: '#FFF',
-    marginTop: Spacing.md,
-    fontSize: 14,
-  },
+
   topControls: {
     position: 'absolute',
     top: Spacing.md,
@@ -337,38 +293,69 @@ const styles = StyleSheet.create({
   controlButton: {
     width: 44,
     height: 44,
-    borderRadius: Radii.round,
+    borderRadius: 22,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   captureBar: {
     alignItems: 'center',
-    paddingVertical: Spacing.xl,
-    paddingBottom: Spacing.xxl,
+    paddingTop: Spacing.md,
+    backgroundColor: '#000000',
   },
   captureHint: {
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: Spacing.md,
   },
+  captureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: Spacing.xxl,
+  },
+  mediaRollWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    overflow: 'hidden',
+  },
+  mediaRollThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  mediaRollEmpty: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   captureButton: {
-    width: 78,
-    height: 78,
-    borderRadius: Radii.round,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     borderWidth: 4,
+    borderColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   captureInner: {
-    width: 60,
-    height: 60,
-    borderRadius: Radii.round,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
   },
 
-  // Preview
+  // Preview Image Review View (iOS style)
   previewContainer: {
     flex: 1,
     position: 'relative',
+    backgroundColor: '#000',
   },
   previewImage: {
     flex: 1,
@@ -376,7 +363,7 @@ const styles = StyleSheet.create({
   timestampBadge: {
     position: 'absolute',
     bottom: Spacing.md,
-    left: Spacing.md,
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.65)',
@@ -386,34 +373,27 @@ const styles = StyleSheet.create({
   },
   timestampText: {
     color: '#FFF',
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '600',
   },
-  previewActions: {
+  reviewBar: {
     flexDirection: 'row',
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-    paddingBottom: Spacing.xxl,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingHorizontal: Spacing.xxl,
+    paddingTop: Spacing.lg,
+  },
+  reviewTextButton: {
     paddingVertical: Spacing.md,
-    borderRadius: Radii.md,
-    borderWidth: 1.5,
-    gap: Spacing.xs,
+    paddingHorizontal: Spacing.lg,
   },
-  actionButtonPrimary: {
-    borderWidth: 0,
-    ...Shadows.medium,
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: '700',
+  reviewButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   pressed: {
-    opacity: 0.78,
-    transform: [{ scale: 0.97 }],
+    opacity: 0.75,
+    transform: [{ scale: 0.96 }],
   },
 });

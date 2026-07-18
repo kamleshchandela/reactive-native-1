@@ -358,6 +358,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.xl,
+    paddingBottom: 120,
   },
   emptyIcon: {
     width: 110,

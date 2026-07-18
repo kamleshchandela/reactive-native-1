@@ -1,5 +1,5 @@
 // Module 7: Survey Preview — Detailed Summary, Edit Survey, Submit Survey with History Persistence
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker, PROVIDER_DEFAULT, MapType } from 'react-native-maps';
 import { useColorScheme } from '../hooks/use-color-scheme';
 import { Colors, Spacing, Radii, Shadows } from '../constants/theme';
 import { useSurveys, Survey } from '../context/SurveyContext';
@@ -22,6 +23,7 @@ export default function PreviewScreen() {
   const themeColors = Colors[colorScheme];
   const { draft, surveys, submitDraft, loadSurveyIntoDraft } = useSurveys();
   const params = useLocalSearchParams<{ id?: string }>();
+  const [mapType, setMapType] = useState<MapType>('standard');
 
   // If an ID param is provided, we're in read-only view of a past survey.
   const readOnlySurvey: Survey | undefined = params.id
@@ -130,21 +132,82 @@ export default function PreviewScreen() {
           )}
         </DetailCard>
 
-        {/* Location */}
-        <DetailCard title="Location" icon="location-outline" themeColors={themeColors}>
+        {/* Location with Embedded Map View */}
+        <DetailCard title="Location Markers" icon="location-outline" themeColors={themeColors}>
           {data.location ? (
-            <>
+            <View>
               <DetailRow label="Latitude" value={data.location.latitude.toFixed(6)} themeColors={themeColors} />
               <DetailRow label="Longitude" value={data.location.longitude.toFixed(6)} themeColors={themeColors} />
               <DetailRow label="Accuracy" value={`±${data.location.accuracy} meters`} themeColors={themeColors} />
-            </>
+              
+              {/* Embedded Map widget */}
+              <Text style={[styles.mapSectionTitle, { color: themeColors.textSecondary }]}>MAP POSITION</Text>
+              <View style={[styles.mapContainer, { borderColor: themeColors.border }, Shadows.light]}>
+                <MapView
+                  provider={PROVIDER_DEFAULT}
+                  style={styles.map}
+                  mapType={mapType}
+                  initialRegion={{
+                    latitude: data.location.latitude,
+                    longitude: data.location.longitude,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
+                  }}
+                  region={{
+                    latitude: data.location.latitude,
+                    longitude: data.location.longitude,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
+                  }}
+                  scrollEnabled={true}
+                  zoomEnabled={true}
+                >
+                  <Marker
+                    coordinate={{
+                      latitude: data.location.latitude,
+                      longitude: data.location.longitude,
+                    }}
+                  >
+                    <View style={[styles.markerBg, { backgroundColor: themeColors.primary }]}>
+                      <View style={styles.markerInner} />
+                    </View>
+                  </Marker>
+                </MapView>
+
+                {/* Satellite toggle controls inside map card */}
+                <View style={[styles.mapControls, { backgroundColor: themeColors.surface + 'e6', borderColor: themeColors.border }]}>
+                  <Pressable
+                    style={[
+                      styles.mapControlButton,
+                      mapType === 'standard' && { backgroundColor: themeColors.primary },
+                    ]}
+                    onPress={() => setMapType('standard')}
+                  >
+                    <Text style={[styles.mapControlText, { color: mapType === 'standard' ? '#FFF' : themeColors.text }]}>
+                      Default
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.mapControlButton,
+                      mapType === 'hybrid' && { backgroundColor: themeColors.primary },
+                    ]}
+                    onPress={() => setMapType('hybrid')}
+                  >
+                    <Text style={[styles.mapControlText, { color: mapType === 'hybrid' ? '#FFF' : themeColors.text }]}>
+                      Satellite
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
           ) : (
             <EmptyField label="No location attached" themeColors={themeColors} />
           )}
         </DetailCard>
 
         {/* Contact */}
-        <DetailCard title="Contact" icon="people-outline" themeColors={themeColors}>
+        <DetailCard title="Contact Details" icon="people-outline" themeColors={themeColors}>
           {data.contact ? (
             <>
               <DetailRow label="Name" value={data.contact.name} themeColors={themeColors} />
@@ -162,7 +225,7 @@ export default function PreviewScreen() {
           </DetailCard>
         ) : null}
 
-        {/* Actions */}
+        {/* Actions buttons */}
         <View style={styles.actionsRow}>
           <Pressable
             style={({ pressed }) => [
@@ -174,7 +237,7 @@ export default function PreviewScreen() {
           >
             <Ionicons name="create-outline" size={20} color={themeColors.primary} style={{ marginRight: Spacing.sm }} />
             <Text style={[styles.actionButtonText, { color: themeColors.primary }]}>
-              {isReadOnly ? 'Edit' : 'Edit Survey'}
+              {isReadOnly ? 'Edit Report' : 'Edit Fields'}
             </Text>
           </Pressable>
 
@@ -194,7 +257,7 @@ export default function PreviewScreen() {
           )}
         </View>
 
-        <View style={{ height: Spacing.xxl }} />
+        <View style={{ height: 110 }} />
       </ScrollView>
     </View>
   );
@@ -310,6 +373,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   photoTimestampText: { fontSize: 12 },
+
+  mapSectionTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+  },
+  mapContainer: {
+    height: 180,
+    borderRadius: Radii.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginTop: Spacing.xs,
+    position: 'relative',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  markerBg: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+  },
+  markerInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+  },
+  mapControls: {
+    position: 'absolute',
+    bottom: Spacing.sm,
+    right: Spacing.sm,
+    flexDirection: 'row',
+    borderRadius: Radii.md,
+    borderWidth: 1,
+    padding: 2,
+  },
+  mapControlButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: Radii.sm,
+  },
+  mapControlText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
 
   notesText: { fontSize: 14, lineHeight: 22 },
 

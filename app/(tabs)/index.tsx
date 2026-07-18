@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable, Image } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '../../hooks/use-color-scheme';
-import { Colors, Spacing, Radii, Shadows } from '../../constants/theme';
+import { Colors, Spacing, Radii, Shadows, Fonts } from '../../constants/theme';
 import { STUDENT_DETAILS } from '../../constants/config';
 import { useSurveys, Survey } from '../../context/SurveyContext';
 import { CustomHeader } from '../../components/CustomHeader';
@@ -309,18 +309,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1.5,
+    fontFamily: Fonts.sansMedium,
   },
   welcomeTitle: {
     color: '#FFF',
     fontSize: 24,
     fontWeight: '800',
     marginTop: Spacing.xs,
+    fontFamily: Fonts.sansBold,
   },
   welcomeSubtitle: {
     color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 13,
     marginTop: 4,
     fontWeight: '500',
+    fontFamily: Fonts.sans,
   },
   card: {
     padding: Spacing.lg,
@@ -338,6 +341,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1,
+    fontFamily: Fonts.sansMedium,
   },
   statusIndicator: {
     paddingHorizontal: 8,
@@ -373,10 +377,12 @@ const styles = StyleSheet.create({
   inspectorName: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: Fonts.sansMedium,
   },
   inspectorSub: {
     fontSize: 12,
     marginTop: 2,
+    fontFamily: Fonts.sans,
   },
   batchBadge: {
     flexDirection: 'row',
@@ -390,6 +396,7 @@ const styles = StyleSheet.create({
   batchText: {
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: Fonts.sansMedium,
   },
   statsRow: {
     flexDirection: 'row',
@@ -414,11 +421,13 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: '800',
+    fontFamily: Fonts.sansBold,
   },
   statLabel: {
     fontSize: 12,
     fontWeight: '600',
     marginTop: 2,
+    fontFamily: Fonts.sans,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -431,10 +440,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0.2,
+    fontFamily: Fonts.sansBold,
   },
   seeAllText: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: Fonts.sansMedium,
   },
   grid: {
     flexDirection: 'row',
@@ -461,10 +472,12 @@ const styles = StyleSheet.create({
   gridText: {
     fontSize: 14,
     fontWeight: '700',
+    fontFamily: Fonts.sansMedium,
   },
   gridSubText: {
     fontSize: 10,
     marginTop: 2,
+    fontFamily: Fonts.sans,
   },
   recentItem: {
     flexDirection: 'row',
@@ -488,6 +501,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     flex: 1,
     marginRight: Spacing.sm,
+    fontFamily: Fonts.sansMedium,
   },
   priorityBadge: {
     paddingHorizontal: 8,
@@ -497,10 +511,12 @@ const styles = StyleSheet.create({
   priorityBadgeText: {
     fontSize: 10,
     fontWeight: '800',
+    fontFamily: Fonts.sansBold,
   },
   recentItemSubtitle: {
     fontSize: 12,
     marginBottom: Spacing.sm,
+    fontFamily: Fonts.sans,
   },
   recentItemFooter: {
     flexDirection: 'row',
@@ -513,6 +529,7 @@ const styles = StyleSheet.create({
   },
   recentItemDate: {
     fontSize: 11,
+    fontFamily: Fonts.sans,
   },
   attachmentIcons: {
     flexDirection: 'row',
@@ -537,11 +554,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: Spacing.md,
     marginBottom: Spacing.xs,
+    fontFamily: Fonts.sansBold,
   },
   emptySubText: {
     fontSize: 11,
     textAlign: 'center',
     lineHeight: 16,
+    fontFamily: Fonts.sans,
   },
   pressed: {
     opacity: 0.85,

@@ -33,6 +33,7 @@ export default function NewSurveyScreen() {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [activeField, setActiveField] = useState<string | null>(null);
 
   const priorities: Priority[] = ['Low', 'Medium', 'High'];
 
@@ -46,8 +47,8 @@ export default function NewSurveyScreen() {
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
-    if (!draft.siteName.trim()) newErrors.siteName = 'Site Name is required';
-    if (!draft.clientName.trim()) newErrors.clientName = 'Client Name is required';
+    if (!draft.siteName.trim()) newErrors.siteName = 'Site name is required';
+    if (!draft.clientName.trim()) newErrors.clientName = 'Client name is required';
     if (!draft.description.trim()) newErrors.description = 'Description is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -55,13 +56,12 @@ export default function NewSurveyScreen() {
 
   const handleNext = () => {
     if (validate()) {
-      // Navigate to preview screen
       router.push('/preview');
     }
   };
 
   const handleDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios'); // keep open on iOS
+    setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       updateDraft({ date: selectedDate });
     }
@@ -83,93 +83,132 @@ export default function NewSurveyScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* Form Header */}
+        {/* Clean Header */}
         <View style={styles.formHeader}>
           <Text style={[styles.formTitle, { color: themeColors.text }]}>
-            {editingId ? 'Update Survey Details' : 'Create New Inspection'}
+            {editingId ? 'Update Report Details' : 'Create New Inspection'}
           </Text>
           <Text style={[styles.formSubtitle, { color: themeColors.textSecondary }]}>
-            Fill in all required fields to proceed
+            Complete site fields and attach inspector resources below
           </Text>
         </View>
 
-        {/* Site Name */}
+        {/* Site Name Field */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: themeColors.text }]}>
-            Site Name <Text style={{ color: themeColors.error }}>*</Text>
+          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>
+            SITE NAME <Text style={{ color: themeColors.error }}>*</Text>
           </Text>
           <View style={[
-            styles.inputWrapper,
-            { backgroundColor: themeColors.surface, borderColor: errors.siteName ? themeColors.error : themeColors.border },
+            styles.inputContainer,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: errors.siteName
+                ? themeColors.error
+                : activeField === 'siteName'
+                  ? themeColors.primary
+                  : themeColors.border,
+            },
+            Shadows.light,
           ]}>
-            <Ionicons name="business-outline" size={20} color={themeColors.textSecondary} style={styles.inputIcon} />
+            <Ionicons name="business" size={18} color={activeField === 'siteName' ? themeColors.primary : themeColors.textSecondary} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: themeColors.text }]}
-              placeholder="e.g. North Tower Site"
+              style={[styles.textInput, { color: themeColors.text }]}
+              placeholder="e.g. North Station Hub"
               placeholderTextColor={themeColors.textSecondary}
               value={draft.siteName}
-              onChangeText={(v) => { updateDraft({ siteName: v }); setErrors((e) => ({ ...e, siteName: undefined })); }}
+              onFocus={() => setActiveField('siteName')}
+              onBlur={() => setActiveField(null)}
+              onChangeText={(v) => {
+                updateDraft({ siteName: v });
+                setErrors((e) => ({ ...e, siteName: undefined }));
+              }}
               returnKeyType="next"
             />
           </View>
           {errors.siteName && (
-            <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.siteName}</Text>
+            <Text style={[styles.errorLabel, { color: themeColors.error }]}>{errors.siteName}</Text>
           )}
         </View>
 
-        {/* Client Name */}
+        {/* Client Name Field */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: themeColors.text }]}>
-            Client Name <Text style={{ color: themeColors.error }}>*</Text>
+          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>
+            CLIENT NAME <Text style={{ color: themeColors.error }}>*</Text>
           </Text>
           <View style={[
-            styles.inputWrapper,
-            { backgroundColor: themeColors.surface, borderColor: errors.clientName ? themeColors.error : themeColors.border },
+            styles.inputContainer,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: errors.clientName
+                ? themeColors.error
+                : activeField === 'clientName'
+                  ? themeColors.primary
+                  : themeColors.border,
+            },
+            Shadows.light,
           ]}>
-            <Ionicons name="person-outline" size={20} color={themeColors.textSecondary} style={styles.inputIcon} />
+            <Ionicons name="person" size={18} color={activeField === 'clientName' ? themeColors.primary : themeColors.textSecondary} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: themeColors.text }]}
-              placeholder="e.g. ACME Corporation"
+              style={[styles.textInput, { color: themeColors.text }]}
+              placeholder="e.g. Nexus Energy Inc."
               placeholderTextColor={themeColors.textSecondary}
               value={draft.clientName}
-              onChangeText={(v) => { updateDraft({ clientName: v }); setErrors((e) => ({ ...e, clientName: undefined })); }}
+              onFocus={() => setActiveField('clientName')}
+              onBlur={() => setActiveField(null)}
+              onChangeText={(v) => {
+                updateDraft({ clientName: v });
+                setErrors((e) => ({ ...e, clientName: undefined }));
+              }}
               returnKeyType="next"
             />
           </View>
           {errors.clientName && (
-            <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.clientName}</Text>
+            <Text style={[styles.errorLabel, { color: themeColors.error }]}>{errors.clientName}</Text>
           )}
         </View>
 
-        {/* Description */}
+        {/* Description Field */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: themeColors.text }]}>
-            Description <Text style={{ color: themeColors.error }}>*</Text>
+          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>
+            DESCRIPTION ASSESSMENT <Text style={{ color: themeColors.error }}>*</Text>
           </Text>
           <View style={[
-            styles.textAreaWrapper,
-            { backgroundColor: themeColors.surface, borderColor: errors.description ? themeColors.error : themeColors.border },
+            styles.textAreaContainer,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: errors.description
+                ? themeColors.error
+                : activeField === 'description'
+                  ? themeColors.primary
+                  : themeColors.border,
+            },
+            Shadows.light,
           ]}>
             <TextInput
-              style={[styles.textArea, { color: themeColors.text }]}
-              placeholder="Describe the inspection scope, issues found, observations..."
+              style={[styles.textAreaInput, { color: themeColors.text }]}
+              placeholder="Describe assessment goals, structural integrity, and key logs..."
               placeholderTextColor={themeColors.textSecondary}
               value={draft.description}
-              onChangeText={(v) => { updateDraft({ description: v }); setErrors((e) => ({ ...e, description: undefined })); }}
+              onFocus={() => setActiveField('description')}
+              onBlur={() => setActiveField(null)}
+              onChangeText={(v) => {
+                updateDraft({ description: v });
+                setErrors((e) => ({ ...e, description: undefined }));
+              }}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
             />
           </View>
           {errors.description && (
-            <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
+            <Text style={[styles.errorLabel, { color: themeColors.error }]}>{errors.description}</Text>
           )}
         </View>
 
-        {/* Priority Selector */}
+        {/* Priority Segment controller */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: themeColors.text }]}>Priority</Text>
-          <View style={styles.priorityRow}>
+          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>PRIORITY LEVEL</Text>
+          <View style={styles.prioritySelectorRow}>
             {priorities.map((p) => {
               const isSelected = draft.priority === p;
               const color = getPriorityColor(p);
@@ -177,22 +216,29 @@ export default function NewSurveyScreen() {
                 <Pressable
                   key={p}
                   style={({ pressed }) => [
-                    styles.priorityButton,
+                    styles.priorityChip,
                     {
                       backgroundColor: isSelected ? color : themeColors.surface,
-                      borderColor: color,
+                      borderColor: isSelected ? color : themeColors.border,
                     },
+                    Shadows.light,
                     pressed && styles.pressed,
                   ]}
                   onPress={() => updateDraft({ priority: p })}
                 >
                   <Ionicons
-                    name={p === 'High' ? 'alert-circle' : p === 'Medium' ? 'remove-circle' : 'checkmark-circle'}
+                    name={p === 'High' ? 'alert-circle-outline' : p === 'Medium' ? 'warning-outline' : 'checkmark-circle-outline'}
                     size={16}
-                    color={isSelected ? '#FFF' : color}
-                    style={{ marginRight: 4 }}
+                    color={isSelected ? '#FFFFFF' : color}
+                    style={{ marginRight: 6 }}
                   />
-                  <Text style={[styles.priorityText, { color: isSelected ? '#FFF' : color }]}>
+                  <Text style={[
+                    styles.priorityChipText,
+                    {
+                      color: isSelected ? '#FFFFFF' : themeColors.text,
+                      fontWeight: isSelected ? '800' : '600',
+                    }
+                  ]}>
                     {p}
                   </Text>
                 </Pressable>
@@ -201,20 +247,21 @@ export default function NewSurveyScreen() {
           </View>
         </View>
 
-        {/* Date Picker */}
+        {/* Date Picker Button */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: themeColors.text }]}>Inspection Date</Text>
+          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>INSPECTION DATE</Text>
           <Pressable
             style={({ pressed }) => [
-              styles.inputWrapper,
+              styles.inputContainer,
               { backgroundColor: themeColors.surface, borderColor: themeColors.border },
+              Shadows.light,
               pressed && styles.pressed,
             ]}
             onPress={() => setShowDatePicker(true)}
           >
-            <Ionicons name="calendar-outline" size={20} color={themeColors.textSecondary} style={styles.inputIcon} />
-            <Text style={[styles.dateText, { color: themeColors.text }]}>{formattedDate}</Text>
-            <Ionicons name="chevron-down" size={18} color={themeColors.textSecondary} />
+            <Ionicons name="calendar-outline" size={18} color={themeColors.primary} style={styles.inputIcon} />
+            <Text style={[styles.dateValueText, { color: themeColors.text }]}>{formattedDate}</Text>
+            <Ionicons name="chevron-down" size={16} color={themeColors.textSecondary} />
           </Pressable>
 
           {showDatePicker && (
@@ -228,41 +275,88 @@ export default function NewSurveyScreen() {
           )}
         </View>
 
-        {/* Attachments Summary */}
-        <View style={[styles.attachmentsCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-          <Text style={[styles.attachmentsTitle, { color: themeColors.text }]}>Attachments</Text>
-          <View style={styles.attachmentRow}>
-            <AttachmentBadge
-              label="Photo"
-              icon="camera"
-              attached={!!draft.photoUri}
-              themeColors={themeColors}
-              onPress={() => router.push('/camera')}
+        {/* Vertical Attachments Checklist (Human Designed Style!) */}
+        <Text style={[styles.fieldLabel, { color: themeColors.textSecondary, alignSelf: 'flex-start', marginLeft: Spacing.lg, marginBottom: Spacing.xs }]}>
+          REQUIRED ATTACHMENTS
+        </Text>
+        <View style={[styles.checklistCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }, Shadows.light]}>
+          
+          {/* Item 1: Photo */}
+          <Pressable
+            style={({ pressed }) => [styles.checklistItem, pressed && styles.pressed]}
+            onPress={() => router.push('/camera')}
+          >
+            <View style={[styles.checklistIconWrapper, { backgroundColor: draft.photoUri ? themeColors.success + '15' : themeColors.primary + '10' }]}>
+              <Ionicons name="camera" size={18} color={draft.photoUri ? themeColors.success : themeColors.primary} />
+            </View>
+            <View style={styles.checklistTextWrapper}>
+              <Text style={[styles.checklistLabel, { color: themeColors.text }]}>Site Image Capture</Text>
+              <Text style={[styles.checklistStatus, { color: draft.photoUri ? themeColors.success : themeColors.textSecondary }]}>
+                {draft.photoUri ? 'Image attached successfully' : 'Inspection photo is required'}
+              </Text>
+            </View>
+            <Ionicons
+              name={draft.photoUri ? "checkmark-circle" : "chevron-forward"}
+              size={18}
+              color={draft.photoUri ? themeColors.success : themeColors.border}
             />
-            <AttachmentBadge
-              label="Location"
-              icon="location"
-              attached={!!draft.location}
-              themeColors={themeColors}
-              onPress={() => router.push('/location')}
+          </Pressable>
+
+          <View style={[styles.checklistDivider, { backgroundColor: themeColors.border }]} />
+
+          {/* Item 2: Location */}
+          <Pressable
+            style={({ pressed }) => [styles.checklistItem, pressed && styles.pressed]}
+            onPress={() => router.push('/location')}
+          >
+            <View style={[styles.checklistIconWrapper, { backgroundColor: draft.location ? themeColors.success + '15' : themeColors.primary + '10' }]}>
+              <Ionicons name="location" size={18} color={draft.location ? themeColors.success : themeColors.primary} />
+            </View>
+            <View style={styles.checklistTextWrapper}>
+              <Text style={[styles.checklistLabel, { color: themeColors.text }]}>GPS Marker Coordinates</Text>
+              <Text style={[styles.checklistStatus, { color: draft.location ? themeColors.success : themeColors.textSecondary }]}>
+                {draft.location ? 'GPS coordinates pinned' : 'Satellite marker coordinates required'}
+              </Text>
+            </View>
+            <Ionicons
+              name={draft.location ? "checkmark-circle" : "chevron-forward"}
+              size={18}
+              color={draft.location ? themeColors.success : themeColors.border}
             />
-            <AttachmentBadge
-              label="Contact"
-              icon="people"
-              attached={!!draft.contact}
-              themeColors={themeColors}
-              onPress={() => router.push('/contacts')}
+          </Pressable>
+
+          <View style={[styles.checklistDivider, { backgroundColor: themeColors.border }]} />
+
+          {/* Item 3: Contact */}
+          <Pressable
+            style={({ pressed }) => [styles.checklistItem, pressed && styles.pressed]}
+            onPress={() => router.push('/contacts')}
+          >
+            <View style={[styles.checklistIconWrapper, { backgroundColor: draft.contact ? themeColors.success + '15' : themeColors.primary + '10' }]}>
+              <Ionicons name="people" size={18} color={draft.contact ? themeColors.success : themeColors.primary} />
+            </View>
+            <View style={styles.checklistTextWrapper}>
+              <Text style={[styles.checklistLabel, { color: themeColors.text }]}>Site Representative Contact</Text>
+              <Text style={[styles.checklistStatus, { color: draft.contact ? themeColors.success : themeColors.textSecondary }]}>
+                {draft.contact ? `${draft.contact.name} linked` : 'Link site representative contact (Optional)'}
+              </Text>
+            </View>
+            <Ionicons
+              name={draft.contact ? "checkmark-circle" : "chevron-forward"}
+              size={18}
+              color={draft.contact ? themeColors.success : themeColors.border}
             />
-          </View>
+          </Pressable>
+
         </View>
 
-        {/* Notes */}
+        {/* Notes Field */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: themeColors.text }]}>Notes</Text>
-          <View style={[styles.textAreaWrapper, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>ADDITIONAL NOTES</Text>
+          <View style={[styles.textAreaContainer, { backgroundColor: themeColors.surface, borderColor: themeColors.border }, Shadows.light]}>
             <TextInput
-              style={[styles.textArea, { color: themeColors.text }]}
-              placeholder="Additional notes or remarks..."
+              style={[styles.textAreaInput, { color: themeColors.text }]}
+              placeholder="Type additional remarks or climate parameters here..."
               placeholderTextColor={themeColors.textSecondary}
               value={draft.notes}
               onChangeText={(v) => updateDraft({ notes: v })}
@@ -273,197 +367,171 @@ export default function NewSurveyScreen() {
           </View>
         </View>
 
-        {/* Submit Button */}
+        {/* Submit Preview Button */}
         <Pressable
           style={({ pressed }) => [
-            styles.submitButton,
+            styles.previewButton,
             { backgroundColor: themeColors.primary },
             pressed && styles.pressed,
           ]}
           onPress={handleNext}
         >
-          <Ionicons name="eye-outline" size={20} color="#FFF" style={{ marginRight: Spacing.sm }} />
-          <Text style={styles.submitButtonText}>Preview Survey</Text>
+          <Ionicons name="eye" size={18} color="#FFF" style={{ marginRight: 6 }} />
+          <Text style={styles.previewButtonText}>Preview Survey Report</Text>
         </Pressable>
 
-        <View style={{ height: Spacing.xxl }} />
+        <View style={{ height: 110 }} />
       </ScrollView>
     </View>
   );
 }
 
-/* Small sub-component for attachment badges */
-function AttachmentBadge({
-  label, icon, attached, themeColors, onPress,
-}: {
-  label: string;
-  icon: string;
-  attached: boolean;
-  themeColors: typeof Colors.light;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.attachmentBadge,
-        {
-          backgroundColor: attached ? themeColors.success + '15' : themeColors.background,
-          borderColor: attached ? themeColors.success : themeColors.border,
-        },
-        pressed && styles.pressed,
-      ]}
-      onPress={onPress}
-    >
-      <Ionicons
-        name={`${icon}-outline` as any}
-        size={20}
-        color={attached ? themeColors.success : themeColors.textSecondary}
-      />
-      <Text style={[styles.attachmentLabel, { color: attached ? themeColors.success : themeColors.textSecondary }]}>
-        {label}
-      </Text>
-      {attached && (
-        <Ionicons name="checkmark-circle" size={14} color={themeColors.success} />
-      )}
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: {
-    padding: Spacing.lg,
-    paddingBottom: 110,
+  container: {
+    flex: 1,
   },
-
+  scrollContent: {
+    paddingBottom: Spacing.lg,
+  },
   formHeader: {
-    marginBottom: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    marginBottom: Spacing.md,
   },
   formTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '800',
-    marginBottom: Spacing.xs,
+    marginBottom: 4,
   },
   formSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
+    lineHeight: 16,
   },
-
   fieldGroup: {
-    marginBottom: Spacing.lg,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  fieldLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: Spacing.xs,
   },
-
-  inputWrapper: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
+    height: 48,
     borderRadius: Radii.md,
+    borderWidth: 1,
     paddingHorizontal: Spacing.md,
-    height: 52,
   },
   inputIcon: {
     marginRight: Spacing.sm,
   },
-  input: {
+  textInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
+    fontWeight: '600',
     height: '100%',
   },
-  dateText: {
-    flex: 1,
-    fontSize: 15,
-  },
-
-  textAreaWrapper: {
-    borderWidth: 1.5,
+  textAreaContainer: {
     borderRadius: Radii.md,
+    borderWidth: 1,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    minHeight: 110,
+    height: 100,
   },
-  textArea: {
-    fontSize: 15,
+  textAreaInput: {
     flex: 1,
-  },
-
-  errorText: {
-    fontSize: 12,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-
-  priorityRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  priorityButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.sm,
-    borderRadius: Radii.md,
-    borderWidth: 1.5,
-  },
-  priorityText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
+    height: '100%',
   },
-
-  attachmentsCard: {
-    padding: Spacing.md,
-    borderRadius: Radii.lg,
-    borderWidth: 1,
-    marginBottom: Spacing.lg,
-  },
-  attachmentsTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: Spacing.md,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  attachmentRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  attachmentBadge: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: Radii.md,
-    borderWidth: 1.5,
-    gap: 4,
-  },
-  attachmentLabel: {
+  errorLabel: {
     fontSize: 11,
+    marginTop: 4,
     fontWeight: '600',
   },
-
-  submitButton: {
+  
+  // Segmented priority chips
+  prioritySelectorRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  priorityChip: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: Spacing.lg,
+    height: 42,
+    borderRadius: Radii.md,
+    borderWidth: 1,
+  },
+  priorityChipText: {
+    fontSize: 13,
+  },
+
+  dateValueText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  
+  // Checklist Card Styles (LinkedIn/Human Style)
+  checklistCard: {
+    marginHorizontal: Spacing.lg,
     borderRadius: Radii.lg,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+  },
+  checklistIconWrapper: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  checklistTextWrapper: {
+    flex: 1,
+  },
+  checklistLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  checklistStatus: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  checklistDivider: {
+    height: 1,
+    marginHorizontal: Spacing.md,
+  },
+
+  previewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
+    borderRadius: Radii.md,
+    marginHorizontal: Spacing.lg,
     marginTop: Spacing.sm,
     ...Shadows.medium,
   },
-  submitButtonText: {
+  previewButtonText: {
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
   },
-
   pressed: {
-    opacity: 0.8,
+    opacity: 0.85,
     transform: [{ scale: 0.98 }],
   },
 });
