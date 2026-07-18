@@ -61,13 +61,13 @@ export default function LocationScreen() {
     if (!coords) return;
     const text = `Lat: ${coords.latitude.toFixed(6)}, Lon: ${coords.longitude.toFixed(6)} (±${coords.accuracy}m)`;
     await Clipboard.setStringAsync(text);
-    Alert.alert('Coordinate Copied! 📋', 'Coordinates copied to clipboard.');
+    Alert.alert('Coordinate Copied!', 'Coordinates copied to clipboard.');
   };
 
   const handleAttachToSurvey = () => {
     if (!coords) return;
     updateDraft({ location: coords });
-    Alert.alert('Attached to Survey Draft 📌', 'Location details updated in active survey template.');
+    Alert.alert('Attached to Survey Draft', 'Location details updated in active survey template.');
   };
 
   // ----- PERMISSION DENIED -----

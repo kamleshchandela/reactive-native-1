@@ -1,13 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
+import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useRouter, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '../hooks/use-color-scheme';
-import { Colors, Spacing, Radii } from '../constants/theme';
+import { Colors, Spacing, Radii, Shadows } from '../constants/theme';
 import { STUDENT_DETAILS } from '../constants/config';
-import { useSurveys } from '../context/SurveyContext';
 
 export const CustomDrawerContent = (props: any) => {
   const router = useRouter();
@@ -15,192 +14,130 @@ export const CustomDrawerContent = (props: any) => {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
-  const { surveys } = useSurveys();
 
+  // Helper to determine if the route is active
   const isActive = (route: string) => {
-    if (route === '/(tabs)' || route === '/') {
-      return pathname === '/' || pathname === '/(tabs)' || pathname === '/index';
+    if (route === '/') {
+      return pathname === '/' || pathname === '/index';
     }
-    return pathname.startsWith(route);
+    return pathname === route || pathname.startsWith(route + '/');
   };
 
-  const getIconColor = (route: string) => {
-    return isActive(route) ? themeColors.primary : themeColors.textSecondary;
+  // Navigate and close drawer helper
+  const handleNavigation = (route: string) => {
+    router.push(route as any);
+    if (props.navigation) {
+      props.navigation.closeDrawer();
+    }
   };
 
-  const getStyleActive = (route: string) => {
-    return isActive(route)
-      ? {
-          backgroundColor: themeColors.primary + '10',
-          borderLeftColor: themeColors.primary,
-          borderLeftWidth: 4,
-        }
-      : {
-          borderLeftColor: 'transparent',
-          borderLeftWidth: 4,
-        };
-  };
-
-  const getLabelStyleActive = (route: string) => {
-    return isActive(route)
-      ? { color: themeColors.primary, fontWeight: '800' as const }
-      : { color: themeColors.text, fontWeight: '600' as const };
+  // Reusable custom Pressable Drawer Item for full layout control
+  const CustomItem = ({
+    label,
+    iconName,
+    route,
+  }: {
+    label: string;
+    iconName: string;
+    route: string;
+  }) => {
+    const active = isActive(route);
+    return (
+      <Pressable
+        onPress={() => handleNavigation(route)}
+        style={({ pressed }) => [
+          styles.drawerItem,
+          active
+            ? {
+                backgroundColor: themeColors.primary,
+                ...Shadows.medium,
+              }
+            : {
+                backgroundColor: 'transparent',
+              },
+          pressed && styles.pressed,
+        ]}
+      >
+        <Ionicons
+          name={(active ? iconName : `${iconName}-outline`) as any}
+          size={20}
+          color={active ? '#FFFFFF' : themeColors.textSecondary}
+          style={styles.itemIcon}
+        />
+        <Text
+          style={[
+            styles.drawerItemLabel,
+            {
+              color: active ? '#FFFFFF' : themeColors.text,
+              fontWeight: active ? '700' : '600',
+            },
+          ]}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    );
   };
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.surface }]}>
-      {/* Header Profile Section with Designer Backdrop */}
+      {/* LinkedIn-style Header Profile Card */}
       <View
         style={[
-          styles.profileSection,
+          styles.profileBanner,
           {
-            paddingTop: insets.top + Spacing.lg,
+            paddingTop: insets.top,
             backgroundColor: themeColors.primary,
-            borderBottomColor: themeColors.border,
           },
         ]}
       >
         <View style={styles.headerMesh1} />
         <View style={styles.headerMesh2} />
-        
-        <View style={styles.profileContent}>
-          <View style={styles.avatarRing}>
-            <View style={[styles.avatar, { backgroundColor: '#FFF' }]}>
-              <Text style={[styles.avatarText, { color: themeColors.primary }]}>
-                {STUDENT_DETAILS.name.split(' ').map((n) => n[0]).join('')}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.profileTextWrapper}>
-            <Text style={styles.name} numberOfLines={1}>
-              {STUDENT_DETAILS.name}
-            </Text>
-            <Text style={styles.email} numberOfLines={1}>
-              {STUDENT_DETAILS.email}
-            </Text>
-            <View style={styles.badge}>
-              <Ionicons name="shield-checkmark" size={10} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.badgeText}>{STUDENT_DETAILS.batch}</Text>
-            </View>
-          </View>
+      </View>
+
+      <View style={[styles.profileDetailsContainer, { borderBottomColor: themeColors.border }]}>
+        <View style={[styles.avatarRing, { borderColor: themeColors.surface }, Shadows.medium]}>
+          <Image
+            source={{ uri: STUDENT_DETAILS.profileImage }}
+            style={styles.avatarImage}
+          />
         </View>
+        <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
+          {STUDENT_DETAILS.name}
+        </Text>
       </View>
 
       {/* Navigation Items ScrollView */}
       <DrawerContentScrollView
         {...props}
-        contentContainerStyle={{ paddingTop: Spacing.md }}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.sectionHeader, { color: themeColors.textSecondary }]}>
           CORE PAGES
         </Text>
 
-        <DrawerItem
-          label="Dashboard"
-          icon={({ size }) => (
-            <Ionicons name="grid" size={18} color={getIconColor('/(tabs)')} />
-          )}
-          focused={isActive('/(tabs)') && (pathname === '/' || pathname === '/(tabs)')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/(tabs)')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/(tabs)')]}
-          onPress={() => router.push('/(tabs)')}
-        />
-
-        <DrawerItem
-          label="New Survey"
-          icon={({ size }) => (
-            <Ionicons name="create" size={18} color={getIconColor('/(tabs)/new-survey')} />
-          )}
-          focused={isActive('/(tabs)/new-survey')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/(tabs)/new-survey')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/(tabs)/new-survey')]}
-          onPress={() => router.push('/(tabs)/new-survey')}
-        />
-
-        <DrawerItem
-          label="Survey History"
-          icon={({ size }) => (
-            <Ionicons name="time" size={18} color={getIconColor('/(tabs)/history')} />
-          )}
-          focused={isActive('/(tabs)/history')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/(tabs)/history')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/(tabs)/history')]}
-          onPress={() => router.push('/(tabs)/history')}
-        />
+        <CustomItem label="Dashboard" iconName="grid" route="/" />
+        <CustomItem label="New Survey" iconName="create" route="/new-survey" />
+        <CustomItem label="Survey History" iconName="time" route="/history" />
 
         <View style={[styles.divider, { backgroundColor: themeColors.border }]} />
+        
         <Text style={[styles.sectionHeader, { color: themeColors.textSecondary }]}>
-          HARDWARE INTEGRATION
+          HARDWARE UTILITIES
         </Text>
 
-        <DrawerItem
-          label="Camera Tool"
-          icon={({ size }) => (
-            <Ionicons name="camera" size={18} color={getIconColor('/camera')} />
-          )}
-          focused={isActive('/camera')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/camera')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/camera')]}
-          onPress={() => router.push('/camera')}
-        />
-
-        <DrawerItem
-          label="Contacts Utility"
-          icon={({ size }) => (
-            <Ionicons name="people" size={18} color={getIconColor('/contacts')} />
-          )}
-          focused={isActive('/contacts')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/contacts')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/contacts')]}
-          onPress={() => router.push('/contacts')}
-        />
-
-        <DrawerItem
-          label="GPS Location"
-          icon={({ size }) => (
-            <Ionicons name="location" size={18} color={getIconColor('/location')} />
-          )}
-          focused={isActive('/location')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/location')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/location')]}
-          onPress={() => router.push('/location')}
-        />
-
-        <DrawerItem
-          label="Clipboard Actions"
-          icon={({ size }) => (
-            <Ionicons name="clipboard" size={18} color={getIconColor('/clipboard')} />
-          )}
-          focused={isActive('/clipboard')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/clipboard')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/clipboard')]}
-          onPress={() => router.push('/clipboard')}
-        />
+        <CustomItem label="Camera Capture" iconName="camera" route="/camera" />
+        <CustomItem label="Contacts Integration" iconName="people" route="/contacts" />
+        <CustomItem label="GPS Mapping" iconName="location" route="/location" />
+        <CustomItem label="Clipboard Actions" iconName="clipboard" route="/clipboard" />
 
         <View style={[styles.divider, { backgroundColor: themeColors.border }]} />
 
-        <DrawerItem
-          label="Settings"
-          icon={({ size }) => (
-            <Ionicons name="settings" size={18} color={getIconColor('/settings')} />
-          )}
-          focused={isActive('/settings')}
-          activeTintColor={themeColors.primary}
-          style={[styles.drawerItem, getStyleActive('/settings')]}
-          labelStyle={[styles.drawerItemLabel, getLabelStyleActive('/settings')]}
-          onPress={() => router.push('/settings')}
-        />
+        <CustomItem label="App Settings" iconName="settings" route="/settings" />
       </DrawerContentScrollView>
 
-      {/* Cloud Sync Status Info Footer */}
+      {/* Simple Footer */}
       <View
         style={[
           styles.footer,
@@ -210,15 +147,6 @@ export const CustomDrawerContent = (props: any) => {
           },
         ]}
       >
-        <View style={[styles.syncStatusCard, { backgroundColor: themeColors.background }]}>
-          <View style={[styles.pulseDot, { backgroundColor: themeColors.success }]} />
-          <View>
-            <Text style={[styles.syncTitle, { color: themeColors.text }]}>Database Active</Text>
-            <Text style={[styles.syncDesc, { color: themeColors.textSecondary }]}>
-              {surveys.length} survey records saved
-            </Text>
-          </View>
-        </View>
         <Text style={[styles.footerText, { color: themeColors.textSecondary }]}>
           Field App © 2026
         </Text>
@@ -231,10 +159,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  profileSection: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    borderBottomWidth: 1,
+  profileBanner: {
+    height: 80,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -253,85 +179,94 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     position: 'absolute',
-    bottom: -30,
-    left: -20,
+    bottom: -45,
+    left: -25,
   },
-  profileContent: {
-    flexDirection: 'row',
+  profileDetailsContainer: {
     alignItems: 'center',
-    zIndex: 2,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
   },
   avatarRing: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderWidth: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: Spacing.md,
+    marginTop: -38,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: Radii.round,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontWeight: '800',
-    fontSize: 18,
-  },
-  profileTextWrapper: {
-    flex: 1,
+  avatarImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
   },
   name: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#FFF',
+    marginTop: Spacing.sm,
     marginBottom: 2,
   },
   email: {
     fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: Spacing.xs,
+    marginBottom: 3,
+  },
+  courseText: {
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingHorizontal: Spacing.md,
+    lineHeight: 14,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: Spacing.sm,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 2.5,
     borderRadius: Radii.sm,
-    alignSelf: 'flex-start',
   },
   badgeText: {
-    color: '#FFF',
     fontSize: 9,
     fontWeight: '800',
   },
+  scrollContent: {
+    paddingTop: Spacing.sm,
+  },
   drawerItem: {
-    marginHorizontal: Spacing.sm,
-    marginVertical: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: Spacing.md,
+    marginVertical: 3,
+    paddingHorizontal: Spacing.md,
+    height: 46,
     borderRadius: Radii.md,
-    paddingLeft: Spacing.xs,
+  },
+  itemIcon: {
+    marginRight: Spacing.md,
   },
   drawerItemLabel: {
     fontSize: 13,
-    marginLeft: -Spacing.sm,
   },
   divider: {
     height: 1,
-    marginVertical: Spacing.sm,
-    marginHorizontal: Spacing.md,
+    marginVertical: Spacing.md,
+    marginHorizontal: Spacing.lg,
+    opacity: 0.5,
   },
   sectionHeader: {
     fontSize: 9,
     fontWeight: '800',
-    marginLeft: Spacing.lg,
-    marginBottom: Spacing.xs,
+    marginLeft: Spacing.xl,
+    marginBottom: Spacing.sm,
     letterSpacing: 1.2,
-    marginTop: Spacing.xs,
+    marginTop: Spacing.sm,
   },
   footer: {
     paddingHorizontal: Spacing.md,
@@ -363,5 +298,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
 });

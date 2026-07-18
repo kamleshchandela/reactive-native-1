@@ -80,7 +80,7 @@ export default function ContactsScreen() {
       return;
     }
     await Clipboard.setStringAsync(contact.phoneNumber);
-    Alert.alert('✅ Copied!', `${contact.phoneNumber} copied to clipboard.`);
+    Alert.alert('Copied', `${contact.phoneNumber} copied to clipboard.`);
   };
 
   const handleAttachContact = (contact: ContactItem) => {
@@ -90,7 +90,7 @@ export default function ContactsScreen() {
         phoneNumber: contact.phoneNumber ?? 'No Number',
       },
     });
-    Alert.alert('✅ Attached', `${contact.name} has been attached to the survey draft.`);
+    Alert.alert('Attached', `${contact.name} has been attached to the survey draft.`);
   };
 
   const getInitials = (name: string) => {

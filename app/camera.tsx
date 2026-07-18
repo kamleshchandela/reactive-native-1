@@ -60,7 +60,7 @@ export default function CameraScreen() {
           if (hasPermission) {
             await MediaLibrary.createAssetAsync(photo.uri);
             // Show a brief non-blocking toast-style confirmation
-            Alert.alert('📸 Photo Saved', 'Photo saved to your gallery automatically.');
+            Alert.alert('Photo Saved', 'Photo saved to your gallery automatically.');
           }
         } catch (galleryErr) {
           // Gallery save failed silently — photo still available in draft

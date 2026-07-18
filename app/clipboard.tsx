@@ -23,7 +23,7 @@ export default function ClipboardScreen() {
   const [pastedNotes, setPastedNotes] = useState(draft.notes || '');
 
   const showCopied = (label: string, value: string) => {
-    Alert.alert('✅ Copied!', `${label}:\n${value}`);
+    Alert.alert('Copied', `${label}:\n${value}`);
   };
 
   // Copy last submitted survey ID
@@ -71,7 +71,7 @@ export default function ClipboardScreen() {
   // Save notes to draft
   const handleSaveNotes = () => {
     updateDraft({ notes: pastedNotes });
-    Alert.alert('✅ Saved', 'Notes have been saved to your current survey draft.');
+    Alert.alert('Saved', 'Notes have been saved to your current survey draft.');
   };
 
   // Clear clipboard
@@ -86,7 +86,7 @@ export default function ClipboardScreen() {
           style: 'destructive',
           onPress: async () => {
             await Clipboard.setStringAsync('');
-            Alert.alert('✅ Cleared', 'Clipboard has been cleared.');
+            Alert.alert('Cleared', 'Clipboard has been cleared.');
           },
         },
       ]

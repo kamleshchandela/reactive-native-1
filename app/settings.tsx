@@ -23,7 +23,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: () => {
             clearDraft();
-            Alert.alert('✅ Done', 'Survey draft has been cleared.');
+            Alert.alert('Done', 'Survey draft has been cleared.');
           },
         },
       ]
@@ -139,7 +139,10 @@ function InfoRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: Spacing.lg },
+  scrollContent: {
+    padding: Spacing.lg,
+    paddingBottom: 110,
+  },
 
   appCard: {
     padding: Spacing.xl,

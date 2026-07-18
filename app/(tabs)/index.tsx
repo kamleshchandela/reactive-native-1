@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '../../hooks/use-color-scheme';
@@ -16,9 +16,16 @@ export default function DashboardScreen() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning ☀️';
-    if (hour < 17) return 'Good Afternoon 🌤️';
-    return 'Good Evening 🌙';
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  const getGreetingIcon = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'sunny-outline';
+    if (hour < 17) return 'partly-sunny-outline';
+    return 'moon-outline';
   };
 
   const todayString = new Date().toDateString();
@@ -142,7 +149,10 @@ export default function DashboardScreen() {
         <View style={[styles.welcomeBanner, { backgroundColor: themeColors.primary }]}>
           <View style={styles.bannerCircle1} />
           <View style={styles.bannerCircle2} />
-          <Text style={styles.greetingText}>{getGreeting()}</Text>
+          <View style={styles.greetingRow}>
+            <Ionicons name={getGreetingIcon() as any} size={15} color="rgba(255, 255, 255, 0.75)" style={{ marginRight: 5 }} />
+            <Text style={styles.greetingText}>{getGreeting()}</Text>
+          </View>
           <Text style={styles.welcomeTitle}>Smart Field Inspector</Text>
           <Text style={styles.welcomeSubtitle}>Optimize site surveys & logs with offline sync</Text>
         </View>
@@ -156,10 +166,11 @@ export default function DashboardScreen() {
             </View>
           </View>
           <View style={styles.profileDetails}>
-            <View style={[styles.avatar, { backgroundColor: themeColors.primary }]}>
-              <Text style={styles.avatarText}>
-                {STUDENT_DETAILS.name.split(' ').map((n) => n[0]).join('')}
-              </Text>
+            <View style={styles.avatar}>
+              <Image
+                source={{ uri: STUDENT_DETAILS.profileImage }}
+                style={styles.avatarImage}
+              />
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.inspectorName, { color: themeColors.text }]}>
@@ -287,6 +298,11 @@ const styles = StyleSheet.create({
     bottom: -30,
     left: -20,
   },
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
   greetingText: {
     color: 'rgba(255, 255, 255, 0.75)',
     fontSize: 12,
@@ -344,11 +360,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
+    overflow: 'hidden',
   },
-  avatarText: {
-    color: '#FFF',
-    fontWeight: '800',
-    fontSize: 18,
+  avatarImage: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
   },
   profileInfo: {
     flex: 1,

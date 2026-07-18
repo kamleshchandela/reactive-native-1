@@ -1,9 +1,44 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radii } from '../../constants/theme';
 import { useColorScheme } from '../../hooks/use-color-scheme';
+
+function CustomTabBarButton({ onPress, themeColors }: any) {
+  return (
+    <TouchableOpacity
+      style={{
+        top: -16, // Float the button upwards
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      <View
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: 29,
+          backgroundColor: themeColors.primary,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderWidth: 4,
+          borderColor: themeColors.surface, // Custom cut-out stroke effect
+          elevation: 6,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 6,
+        }}
+      >
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -37,19 +72,18 @@ export default function TabLayout() {
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.08,
           shadowRadius: 16,
-          // Extra styles to center icons vertically
           justifyContent: 'center',
           alignItems: 'center',
-          overflow: 'hidden',
+          // Do NOT overflow: 'hidden' so the floating middle button can extend above
         },
         tabBarItemStyle: {
           height: 64,
           paddingVertical: Spacing.xs,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: '800',
-          letterSpacing: 0.3,
+          letterSpacing: 0.2,
           marginBottom: Spacing.xs,
         },
       }}
@@ -60,22 +94,8 @@ export default function TabLayout() {
           title: 'Dashboard',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={22}
+              size={20}
               name={focused ? 'grid' : 'grid-outline'}
-              color={color}
-              style={{ marginTop: 2 }}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="new-survey"
-        options={{
-          title: 'New Survey',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              size={22}
-              name={focused ? 'add-circle' : 'add-circle-outline'}
               color={color}
               style={{ marginTop: 2 }}
             />
@@ -88,11 +108,20 @@ export default function TabLayout() {
           title: 'History',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={22}
+              size={20}
               name={focused ? 'time' : 'time-outline'}
               color={color}
               style={{ marginTop: 2 }}
             />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="new-survey"
+        options={{
+          title: 'New Survey',
+          tabBarButton: (props) => (
+            <CustomTabBarButton {...props} themeColors={themeColors} />
           ),
         }}
       />
@@ -102,8 +131,22 @@ export default function TabLayout() {
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              size={22}
+              size={20}
               name={focused ? 'person' : 'person-outline'}
+              color={color}
+              style={{ marginTop: 2 }}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              size={20}
+              name={focused ? 'settings' : 'settings-outline'}
               color={color}
               style={{ marginTop: 2 }}
             />

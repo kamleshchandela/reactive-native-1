@@ -61,7 +61,7 @@ export default function PreviewScreen() {
       return;
     }
     Alert.alert(
-      '✅ Survey Submitted!',
+      'Survey Submitted!',
       `Survey ID: ${result.id}\n\nYour inspection report has been saved successfully.`,
       [
         {
