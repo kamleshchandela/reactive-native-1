@@ -135,7 +135,7 @@ export default function LocationScreen() {
         <View style={styles.centeredContent}>
           <ActivityIndicator size="large" color={themeColors.primary} />
           <Text style={[styles.stateText, { color: themeColors.textSecondary, marginTop: Spacing.md }]}>
-            Acquiring satellite lock...
+            Acquiring satellite lock...-
           </Text>
         </View>
       </View>
@@ -180,6 +180,7 @@ export default function LocationScreen() {
         </View>
 
         {/* Map Container */}
+
         <View style={[styles.mapContainer, { borderColor: themeColors.border }, Shadows.medium]}>
           <MapView
             provider={PROVIDER_DEFAULT}

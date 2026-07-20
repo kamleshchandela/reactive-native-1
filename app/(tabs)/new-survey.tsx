@@ -63,7 +63,9 @@ export default function NewSurveyScreen() {
   const handleDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      updateDraft({ date: selectedDate });
+      const now = new Date();
+      const validDate = selectedDate > now ? now : selectedDate;
+      updateDraft({ date: validDate });
     }
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
@@ -270,7 +272,7 @@ export default function NewSurveyScreen() {
               mode="date"
               display={Platform.OS === 'ios' ? 'inline' : 'default'}
               onChange={handleDateChange}
-              maximumDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)}
+              maximumDate={new Date()}
             />
           )}
         </View>
